@@ -40,6 +40,7 @@
     const state = {
         round: 1,
         score: 0,
+        streak: 0,
         boxes: [],
         colCount: CONFIG.INITIAL_COLS,
         rowCount: CONFIG.INITIAL_ROWS,
@@ -291,6 +292,7 @@
      */
     function handleRoundWin() {
         state.gamePhase = 'won';
+        state.streak++;
         
         // Calculate score
         const roundScore = (state.dogCount * CONFIG.POINTS_PER_DOG) + 
@@ -298,16 +300,21 @@
         state.score += roundScore;
         updateStats();
         
-        // Show success message with animation
+        // Show success message with animation (only on unrevealed boxes)
         const boxElements = elements.gameBoard.querySelectorAll('.box');
-        boxElements.forEach(el => el.classList.add('celebrate'));
+        boxElements.forEach((el, index) => {
+            if (!state.boxes[index].correct) {
+                el.classList.add('celebrate');
+            }
+        });
         
-        setMessage(`🎉 Round ${state.round} Complete! +${roundScore} points!`, 'success');
+        const streakText = state.streak > 1 ? ` (${state.streak} in a row!)` : '';
+        setMessage(`🎉 Congratulations! You won! +${roundScore} points!${streakText}`, 'success');
         
-        // Show win modal
+        // Auto-start next round after delay
         setTimeout(() => {
-            showModal(true, roundScore);
-        }, 800);
+            startNextRound();
+        }, 1500);
     }
 
     /**
@@ -315,6 +322,7 @@
      */
     function handleGameOver() {
         state.gamePhase = 'lost';
+        state.streak = 0;
         
         // Reveal all boxes to show what was missed
         const boxElements = elements.gameBoard.querySelectorAll('.box');
@@ -401,6 +409,7 @@
         
         state.round = 1;
         state.score = 0;
+        state.streak = 0;
         state.colCount = CONFIG.INITIAL_COLS;
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
