@@ -66,7 +66,8 @@
         modalMessage: document.getElementById('modal-message'),
         finalScore: document.getElementById('final-score'),
         finalRound: document.getElementById('final-round'),
-        modalPlayAgain: document.getElementById('modal-play-again')
+        modalPlayAgain: document.getElementById('modal-play-again'),
+        debugRevealBtn: document.getElementById('debug-reveal-btn')
     };
 
     // ========================================
@@ -448,6 +449,11 @@
             if (e.key === 'Escape' && elements.modalOverlay.classList.contains('active')) {
                 hideModal();
             }
+        });
+        
+        // Debug: Reveal all boxes for testing
+        elements.debugRevealBtn.addEventListener('click', () => {
+            revealBoxes();
         });
         
         setMessage('Click Play to reveal the boxes!', 'info');
