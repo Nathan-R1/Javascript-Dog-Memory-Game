@@ -172,6 +172,10 @@ body {
     perspective: 1000px;
 }
 
+.game-board.locked {
+    pointer-events: none;
+}
+
 /* ========================================
    Game Box
    ======================================== */

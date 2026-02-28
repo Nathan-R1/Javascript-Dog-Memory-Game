@@ -199,6 +199,7 @@
     function revealBoxes() {
         state.gamePhase = 'revealed';
         elements.playBtn.disabled = true;
+        elements.gameBoard.classList.add('locked');
         
         // Flip all boxes to show content
         const boxElements = elements.gameBoard.querySelectorAll('.box');
@@ -225,6 +226,7 @@
             el.classList.remove('flipped');
         });
         
+        elements.gameBoard.classList.remove('locked');
         state.gamePhase = 'playing';
         elements.playBtn.disabled = false;
         setMessage('Find all the dogs! Click carefully...', 'info');
@@ -386,6 +388,7 @@
         generateBoxes();
         renderBoard();
         
+        elements.gameBoard.classList.remove('locked');
         elements.playBtn.disabled = false;
         setMessage('Click Play to reveal the boxes!', 'info');
     }
