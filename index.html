@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dog Smack - A memory game where you find the dogs!">
+    <title>Dog Smack</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">🐕 Dog Smack 🐕</h1>
+            <p class="game-subtitle">Find all the dogs to win!</p>
+        </header>
+
+        <div class="game-stats">
+            <div class="stat">
+                <span class="stat-label">Round</span>
+                <span class="stat-value" id="round-number">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Dogs Found</span>
+                <span class="stat-value" id="dogs-found">0 / 0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Score</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+        </div>
+
+        <div class="game-message" id="game-message"></div>
+
+        <div class="game-board" id="game-board">
+            <!-- Boxes will be generated here -->
+        </div>
+
+        <div class="game-controls">
+            <button class="btn btn-primary" id="play-btn">Play!</button>
+            <button class="btn btn-secondary" id="restart-btn">New Game</button>
+        </div>
+
+        <div class="game-instructions">
+            <h3>How to Play</h3>
+            <ol>
+                <li>Click <strong>Play!</strong> to reveal all boxes</li>
+                <li>Memorize where the dogs are hiding</li>
+                <li>After 1 second, all boxes flip back</li>
+                <li>Click all the boxes with dogs</li>
+                <li><strong>Don't click empty boxes!</strong> or you lose</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal">
+            <h2 class="modal-title" id="modal-title">Game Over!</h2>
+            <p class="modal-message" id="modal-message">You clicked an empty box!</p>
+            <div class="modal-stats">
+                <p>Final Score: <strong id="final-score">0</strong></p>
+                <p>Reached Round: <strong id="final-round">1</strong></p>
+            </div>
+            <button class="btn btn-primary" id="modal-play-again">Play Again</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

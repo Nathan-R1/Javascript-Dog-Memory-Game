@@ -1,0 +1,534 @@
+/* ========================================
+   Dog Smack - Game Styles
+   ======================================== */
+
+/* CSS Variables for easy theming */
+:root {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-surface-hover: #1f3460;
+    --color-primary: #e94560;
+    --color-primary-hover: #ff6b6b;
+    --color-secondary: #0f3460;
+    --color-text: #eaeaea;
+    --color-text-muted: #a0a0a0;
+    --color-success: #4ade80;
+    --color-error: #f87171;
+    --color-box-back: #2d4a7c;
+    --color-box-front: #1e3a5f;
+    --color-dog: #fbbf24;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    
+    --transition-fast: 150ms ease;
+    --transition-normal: 300ms ease;
+    --transition-slow: 500ms ease;
+}
+
+/* Reset and base styles */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--color-bg);
+    background-image: 
+        radial-gradient(ellipse at top, #1f2937 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, #0f172a 0%, transparent 50%);
+    color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* ========================================
+   Container
+   ======================================== */
+
+.game-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+
+.game-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.game-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 800;
+    color: var(--color-primary);
+    text-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.game-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+}
+
+/* ========================================
+   Stats
+   ======================================== */
+
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    background: var(--color-surface);
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    min-width: 100px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+/* ========================================
+   Message Display
+   ======================================== */
+
+.game-message {
+    text-align: center;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: var(--transition-normal);
+}
+
+.game-message.info {
+    color: var(--color-text-muted);
+}
+
+.game-message.success {
+    color: var(--color-success);
+}
+
+.game-message.error {
+    color: var(--color-error);
+}
+
+/* ========================================
+   Game Board
+   ======================================== */
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(var(--box-columns, 4), 1fr);
+    gap: 8px;
+    padding: 20px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+    perspective: 1000px;
+}
+
+/* ========================================
+   Game Box
+   ======================================== */
+
+.box {
+    aspect-ratio: 1;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform var(--transition-normal);
+}
+
+.box:hover:not(.flipped):not(.disabled) {
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+.box.disabled {
+    cursor: not-allowed;
+}
+
+.box.flipped {
+    transform: rotateY(180deg);
+}
+
+.box.correct {
+    cursor: default;
+}
+
+.box.wrong {
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    20%, 60% { transform: rotateY(180deg) translateX(-5px); }
+    40%, 80% { transform: rotateY(180deg) translateX(5px); }
+}
+
+.box-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 4vw, 2.5rem);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-fast);
+}
+
+.box-front {
+    background: linear-gradient(135deg, var(--color-box-back) 0%, var(--color-box-front) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.box:hover:not(.flipped):not(.disabled) .box-front {
+    box-shadow: var(--shadow-md), 0 0 15px rgba(233, 69, 96, 0.3);
+    border-color: var(--color-primary);
+}
+
+.box-back {
+    background: linear-gradient(135deg, #2d4a3e 0%, #1a2f28 100%);
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    transform: rotateY(180deg);
+}
+
+.box.dog-found .box-back {
+    background: linear-gradient(135deg, #3d5a4e 0%, #2a3f38 100%);
+    border-color: var(--color-success);
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+}
+
+.box.empty-clicked .box-back {
+    background: linear-gradient(135deg, #5a2d2d 0%, #3f1a1a 100%);
+    border-color: var(--color-error);
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
+}
+
+/* ========================================
+   Controls
+   ======================================== */
+
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+/* ========================================
+   Buttons
+   ======================================== */
+
+.btn {
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: var(--transition-slow);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #c13a52 100%);
+    color: white;
+    box-shadow: var(--shadow-md), 0 4px 15px rgba(233, 69, 96, 0.4);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), 0 6px 20px rgba(233, 69, 96, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    background: #4a4a5a;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-primary:disabled::before {
+    display: none;
+}
+
+.btn-secondary {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+    border: 2px solid var(--color-secondary);
+}
+
+.btn-secondary:hover {
+    background: var(--color-secondary);
+    border-color: var(--color-text-muted);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   Instructions
+   ======================================== */
+
+.game-instructions {
+    background: var(--color-surface);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.game-instructions h3 {
+    text-align: center;
+    margin-bottom: 16px;
+    color: var(--color-primary);
+    font-size: 1.3rem;
+}
+
+.game-instructions ol {
+    padding-left: 24px;
+}
+
+.game-instructions li {
+    margin-bottom: 10px;
+    color: var(--color-text-muted);
+}
+
+.game-instructions strong {
+    color: var(--color-text);
+}
+
+/* ========================================
+   Modal
+   ======================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: var(--color-surface);
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.9) translateY(20px);
+    transition: transform var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-overlay.active .modal {
+    transform: scale(1) translateY(0);
+}
+
+.modal-title {
+    font-size: 2rem;
+    margin-bottom: 16px;
+    font-weight: 800;
+}
+
+.modal-title.win {
+    color: var(--color-success);
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+}
+
+.modal-title.lose {
+    color: var(--color-error);
+    text-shadow: 0 0 20px rgba(248, 113, 113, 0.5);
+}
+
+.modal-message {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+}
+
+.modal-stats {
+    background: var(--color-bg);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+}
+
+.modal-stats p {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: var(--color-text-muted);
+}
+
+.modal-stats strong {
+    color: var(--color-text);
+    font-size: 1.2rem;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes celebrate {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.2) rotate(-5deg); }
+    50% { transform: scale(1.2) rotate(5deg); }
+    75% { transform: scale(1.2) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.box.celebrate {
+    animation: celebrate 0.6s ease;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+    
+    .game-stats {
+        gap: 12px;
+    }
+    
+    .stat {
+        padding: 8px 16px;
+        min-width: 80px;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .game-board {
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .box-face {
+        font-size: 2rem;
+    }
+    
+    .game-controls {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .game-instructions {
+        padding: 16px;
+    }
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.btn:focus-visible,
+.box:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
