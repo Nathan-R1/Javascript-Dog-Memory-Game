@@ -52,7 +52,6 @@
         gameMessage: document.getElementById('game-message'),
         gameBoard: document.getElementById('game-board'),
         playBtn: document.getElementById('play-btn'),
-        restartBtn: document.getElementById('restart-btn'),
         modalOverlay: document.getElementById('modal-overlay'),
         modalTitle: document.getElementById('modal-title'),
         modalMessage: document.getElementById('modal-message'),
@@ -407,7 +406,6 @@
             }
         });
         
-        elements.restartBtn.addEventListener('click', restartGame);
         elements.modalPlayAgain.addEventListener('click', () => {
             if (state.gamePhase === 'won') {
                 startNextRound();
