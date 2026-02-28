@@ -22,7 +22,15 @@
         MIN_DOGS: 1,
         MAX_DOG_RATIO: 0.4,
         POINTS_PER_DOG: 10,
-        ROUND_BONUS: 5
+        ROUND_BONUS: 5,
+        TIER_COLORS: {
+            1: '#3b82f6',
+            2: '#a855f7',
+            3: '#22c55e',
+            4: '#eab308',
+            5: '#f97316',
+            6: '#ffd700'
+        }
     };
 
     // ========================================
@@ -38,7 +46,8 @@
         dogCount: 0,
         dogsFound: 0,
         gamePhase: 'ready',
-        revealedTimeout: null
+        revealedTimeout: null,
+        tier: 1
     };
 
     // ========================================
@@ -110,6 +119,16 @@
     
     function getTargetSquare() {
         return state.colCount * state.colCount;
+    }
+
+    function getTier() {
+        return Math.min(6, state.colCount - 3);
+    }
+
+    function updateTierColor() {
+        state.tier = getTier();
+        const tierColor = CONFIG.TIER_COLORS[state.tier];
+        elements.gameBoard.style.setProperty('--tier-color', tierColor);
     }
     
     /**
@@ -349,14 +368,15 @@
     function startNextRound() {
         hideModal();
         state.round++;
-        
-        if (getBoxCount() >= getTargetSquare()) {
+
+        if (state.rowCount >= state.colCount) {
             state.colCount++;
             state.rowCount = 1;
         } else {
             state.rowCount++;
         }
-        
+
+        updateTierColor();
         state.gamePhase = 'ready';
         
         generateBoxes();
@@ -383,7 +403,8 @@
         state.colCount = CONFIG.INITIAL_COLS;
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
-        
+
+        updateTierColor();
         generateBoxes();
         renderBoard();
         
@@ -396,6 +417,7 @@
      * Initialize the game
      */
     function init() {
+        updateTierColor();
         generateBoxes();
         renderBoard();
         

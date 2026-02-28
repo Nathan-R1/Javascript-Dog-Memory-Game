@@ -17,6 +17,7 @@
     --color-box-back: #2d4a7c;
     --color-box-front: #1e3a5f;
     --color-dog: #fbbf24;
+    --tier-color: #3b82f6;
     
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -231,11 +232,12 @@ body {
 
 .box-front {
     background: linear-gradient(135deg, var(--color-box-back) 0%, var(--color-box-front) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--tier-color);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 30%, transparent);
 }
 
 .box:hover:not(.flipped):not(.disabled) .box-front {
-    box-shadow: var(--shadow-md), 0 0 15px rgba(233, 69, 96, 0.3);
+    box-shadow: var(--shadow-md), 0 0 15px var(--tier-color);
     border-color: var(--color-primary);
 }
 
