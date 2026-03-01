@@ -300,13 +300,16 @@
         state.score += roundScore;
         updateStats();
         
-        // Show success message with animation (only on unrevealed boxes)
+        // Show success message - correct boxes celebrate, others just flip
         const boxElements = elements.gameBoard.querySelectorAll('.box');
         boxElements.forEach((el, index) => {
-            if (!state.boxes[index].correct) {
-                el.classList.add('flipped');
-		el.classList.add('celebrate');
+            
+	    if (state.boxes[index].correct) {
+                el.classList.add('celebrate');
             }
+	      else {
+                el.classList.add('flipped');
+           }
         });
         
         const streakText = state.streak > 1 ? ` (${state.streak} in a row!)` : '';
