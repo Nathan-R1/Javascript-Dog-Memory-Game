@@ -23,6 +23,7 @@
         MAX_DOG_RATIO: 0.4,
         POINTS_PER_DOG: 10,
         ROUND_BONUS: 5,
+        MAX_HEALTH: 3,
         TIER_COLORS: {
             1: '#3b82f6',
             2: '#a855f7',
@@ -41,6 +42,7 @@
         round: 1,
         score: 0,
         streak: 0,
+        health: CONFIG.MAX_HEALTH,
         boxes: [],
         colCount: CONFIG.INITIAL_COLS,
         rowCount: CONFIG.INITIAL_ROWS,
@@ -59,6 +61,7 @@
         roundNumber: document.getElementById('round-number'),
         dogsFound: document.getElementById('dogs-found'),
         score: document.getElementById('score'),
+        heartsContainer: document.getElementById('hearts-container'),
         gameMessage: document.getElementById('game-message'),
         gameBoard: document.getElementById('game-board'),
         playBtn: document.getElementById('play-btn'),
@@ -109,6 +112,20 @@
         elements.roundNumber.textContent = state.round;
         elements.dogsFound.textContent = `${state.dogsFound} / ${state.dogCount}`;
         elements.score.textContent = state.score;
+        renderHearts();
+    }
+
+    /**
+     * Render hearts display
+     */
+    function renderHearts() {
+        elements.heartsContainer.innerHTML = '';
+        for (let i = 0; i < CONFIG.MAX_HEALTH; i++) {
+            const heart = document.createElement('span');
+            heart.className = 'heart';
+            heart.textContent = i < state.health ? '❤️' : '🖤';
+            elements.heartsContainer.appendChild(heart);
+        }
     }
 
     // ========================================
@@ -281,9 +298,16 @@
                 handleRoundWin();
             }
         } else {
-            // Clicked an empty box - game over!
+            // Clicked an empty box - lose a heart!
             boxElement.classList.add('wrong', 'empty-clicked');
-            handleGameOver();
+            state.health--;
+            updateStats();
+            
+            if (state.health <= 0) {
+                handleGameOver();
+            } else {
+                setMessage(`💔 You lost a heart! ${state.health} hearts remaining!`, 'error');
+            }
         }
     }
 
@@ -336,7 +360,7 @@
             }
         });
         
-        setMessage('💥 You clicked an empty box! Game Over!', 'error');
+        setMessage('💥 You ran out of hearts! Game Over!', 'error');
         
         // Show lose modal
         setTimeout(() => {
@@ -358,7 +382,7 @@
             elements.modalTitle.textContent = '💥 Game Over!';
             elements.modalTitle.className = 'modal-title lose';
             elements.modalMessage.textContent = 
-                'You clicked an empty box! Better luck next time.';
+                'You ran out of hearts! Better luck next time.';
             elements.modalPlayAgain.textContent = 'Play Again';
         }
         
@@ -414,6 +438,7 @@
         state.round = 1;
         state.score = 0;
         state.streak = 0;
+        state.health = CONFIG.MAX_HEALTH;
         state.colCount = CONFIG.INITIAL_COLS;
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
