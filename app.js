@@ -304,7 +304,8 @@
         const boxElements = elements.gameBoard.querySelectorAll('.box');
         boxElements.forEach((el, index) => {
             if (!state.boxes[index].correct) {
-                el.classList.add('celebrate');
+                el.classList.add('flipped');
+		el.classList.add('celebrate');
             }
         });
         
