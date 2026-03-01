@@ -58,7 +58,6 @@
     // ========================================
     
     const elements = {
-        roundNumber: document.getElementById('round-number'),
         dogsFound: document.getElementById('dogs-found'),
         score: document.getElementById('score'),
         heartsContainer: document.getElementById('hearts-container'),
@@ -109,7 +108,6 @@
      * Update all UI stats
      */
     function updateStats() {
-        elements.roundNumber.textContent = state.round;
         elements.dogsFound.textContent = `${state.dogsFound} / ${state.dogCount}`;
         elements.score.textContent = state.score;
         renderHearts();
