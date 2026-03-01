@@ -337,7 +337,7 @@
         });
         
         const streakText = state.streak > 1 ? ` (${state.streak} in a row!)` : '';
-        setMessage(`🎉 Congratulations! You won! +${roundScore} points!${streakText}`, 'success');
+        setMessage(`🎉 You win! +${roundScore} points!${streakText}`, 'success');
         
         // Auto-start next round after delay
         setTimeout(() => {

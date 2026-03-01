@@ -12,7 +12,6 @@
         <button class="btn btn-debug" id="debug-reveal-btn" style="margin-bottom: 10px; padding: 5px 10px; font-size: 12px; background: #666; color: #fff; border: none; cursor: pointer;">[DEBUG] Rereveal All</button>
         <header class="game-header">
             <h1 class="game-title">🐕 Dog Smack 🐕</h1>
-            <p class="game-subtitle">Find all the dogs to win!</p>
         </header>
 
         <div class="game-stats">
@@ -21,12 +20,16 @@
                 <span class="stat-value" id="round-number">1</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Dogs Found</span>
+                <span class="stat-label">Dogs</span>
                 <span class="stat-value" id="dogs-found">0 / 0</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Score</span>
                 <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Hearts</span>
+                <span class="stat-value" id="hearts-container"></span>
             </div>
         </div>
 
@@ -47,7 +50,8 @@
                 <li>Memorize where the dogs are hiding</li>
                 <li>After 1 second, all boxes flip back</li>
                 <li>Click all the boxes with dogs</li>
-                <li><strong>Don't click empty boxes!</strong> or you lose</li>
+                <li><strong>Don't click empty boxes!</strong> or you lose a heart</li>
+                <li>You have <strong>3 hearts</strong> - game over when all hearts are gone!</li>
             </ol>
         </div>
     </div>
