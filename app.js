@@ -50,6 +50,7 @@
         dogsFound: 0,
         gamePhase: 'ready',
         revealedTimeout: null,
+        nextRoundTimeout: null,
         tier: 1
     };
 
@@ -338,7 +339,7 @@
         setMessage(`🎉 You win! +${roundScore} points!${streakText}`, 'success');
         
         // Auto-start next round after delay
-        setTimeout(() => {
+        state.nextRoundTimeout = setTimeout(() => {
             startNextRound();
         }, 1500);
     }
@@ -401,6 +402,10 @@
      * Start a new round
      */
     function startNextRound() {
+        if (state.nextRoundTimeout) {
+            clearTimeout(state.nextRoundTimeout);
+            state.nextRoundTimeout = null;
+        }
         hideModal();
         state.round++;
 
@@ -427,10 +432,14 @@
     function restartGame() {
         hideModal();
         
-        // Clear any existing timeout
+        // Clear any existing timeouts
         if (state.revealedTimeout) {
             clearTimeout(state.revealedTimeout);
             state.revealedTimeout = null;
+        }
+        if (state.nextRoundTimeout) {
+            clearTimeout(state.nextRoundTimeout);
+            state.nextRoundTimeout = null;
         }
         
         state.round = 1;
@@ -462,6 +471,12 @@
         elements.playBtn.addEventListener('click', () => {
             if (state.gamePhase === 'ready') {
                 revealBoxes();
+            } else if (state.gamePhase === 'won') {
+                if (state.nextRoundTimeout) {
+                    clearTimeout(state.nextRoundTimeout);
+                    state.nextRoundTimeout = null;
+                }
+                startNextRound();
             }
         });
         
