@@ -9,24 +9,30 @@
 </head>
 <body>
     <div class="game-container">
+        <button class="btn btn-debug" id="debug-reveal-btn" style="margin-bottom: 10px; padding: 5px 10px; font-size: 12px; background: #666; color: #fff; border: none; cursor: pointer; margin-right: 5px;">[DEBUG] Reveal All</button>
+        <button class="btn btn-debug" id="debug-next-tier-btn" style="margin-bottom: 10px; padding: 5px 10px; font-size: 12px; background: #666; color: #fff; border: none; cursor: pointer;">[DEBUG] Next Tier</button>
         <header class="game-header">
             <h1 class="game-title">🐕 Dog Smack 🐕</h1>
-            <p class="game-subtitle">Find all the dogs to win!</p>
         </header>
 
         <div class="game-stats">
             <div class="stat">
-                <span class="stat-label">Round</span>
-                <span class="stat-value" id="round-number">1</span>
+                <span class="stat-label">Score</span>
+                <span class="stat-value" id="score">0<>
             </div>
             <div class="stat">
-                <span class="stat-label">Dogs Found</span>
+                <span class="stat-label">Dogs</span>
                 <span class="stat-value" id="dogs-found">0 / 0</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Score</span>
-                <span class="stat-value" id="score">0</span>
+                <span class="stat-label">Hearts</span>
+                <span class="stat-value" id="hearts-container"></span>
             </div>
+        </div>
+
+        <div class="game-inventory" id="game-inventory">
+            <span class="inventory-label">Inventory:</span>
+            <div class="inventory-items" id="inventory-items"></div>
         </div>
 
         <div class="game-message" id="game-message"></div>
@@ -46,7 +52,8 @@
                 <li>Memorize where the dogs are hiding</li>
                 <li>After 1 second, all boxes flip back</li>
                 <li>Click all the boxes with dogs</li>
-                <li><strong>Don't click empty boxes!</strong> or you lose</li>
+                <li><strong>Don't click empty boxes!</strong> or you lose a heart</li>
+                <li>You have <strong>3 hearts</strong> - game over when all hearts are gone!</li>
             </ol>
         </div>
     </div>
@@ -61,6 +68,23 @@
                 <p>Reached Round: <strong id="final-round">1</strong></p>
             </div>
             <button class="btn btn-primary" id="modal-play-again">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Spin to Win Modal -->
+    <div class="modal-overlay" id="spin-modal">
+        <div class="modal spin-modal">
+            <h2 class="modal-title" style="color: #ffd700;">💎 Spin to Win! 💎</h2>
+            <div class="spin-container">
+                <div class="spin-spinner" id="spin-spinner">
+                    <span class="spin-item" id="spin-result-emoji">🎁</span>
+                </div>
+            </div>
+            <div class="spin-result" id="spin-result" style="display: none;">
+                <p class="spin-result-name" id="spin-result-name" style="font-size: 1.5rem; font-weight: bold; color: #ffd700; margin: 10px 0;"></p>
+                <p class="spin-result-desc" id="spin-result-desc" style="color: #aaa; margin-bottom: 15px;"></p>
+            </div>
+            <button class="btn btn-primary" id="spin-btn" style="display: none;" onclick="hideSpinModal()">Collect!</button>
         </div>
     </div>
 

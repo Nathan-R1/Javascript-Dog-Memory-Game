@@ -1,10 +1,8 @@
 Write me a web app thst i can host with python with python -m http:server.
 
-the web app is a responsive layout.
-
-the web app is a game called "Dog Smack".
-
-at each stage it shows you a number of face down boxes. each box can either have a dog or not have a dog. when you hit play it reveals all boxes to show what they have. they are revealed for a second before all being flipped back down. then you musy select all the dogs. if you aelect any empty boxes you immediately lose. if yiu select all dogs you win and the next round starts with one additional box.
+- the web app is a responsive layout.
+- the web app is a game called "Dog Smack".
+- at each stage it shows you a number of face down boxes. each box can either have a dog or not have a dog. when you hit play it reveals all boxes to show what they have. they are revealed for a second before all being flipped back down. then you musy select all the dogs. if you aelect any empty boxes you immediately lose. if yiu select all dogs you win and the next round starts with one additional box.
 
 Build a production-ready web application using plain HTML, CSS, and vanilla JavaScript with no build tools, bundlers, transpilers, or frameworks required.
 The app must run directly by opening index.html in a browser or serving it from a simple static server, with all scripts written in standard ES6 JavaScript and no JSX or Babel.
