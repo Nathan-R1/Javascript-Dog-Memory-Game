@@ -134,16 +134,16 @@
         elements.gameMessage.className = `game-message ${type}`;
     }
 
-    function getAdjacentIndices(index, colCount, rowCount, totalBoxes) {
+    function getAdjacentIndices(index, colCount, rowCount) {
         const adjacent = [];
         const row = Math.floor(index / colCount);
         const col = index % colCount;
-        
+
         if (row > 0) adjacent.push(index - colCount);
         if (row < rowCount - 1) adjacent.push(index + colCount);
         if (col > 0) adjacent.push(index - 1);
         if (col < colCount - 1) adjacent.push(index + 1);
-        
+
         return adjacent;
     }
 
@@ -275,7 +275,7 @@
                 return item;
             }
         }*/
-        return LOOT_TABLE[5];
+        return LOOT_TABLE[8];
     }
 
     function showSpinToWinModal() {
@@ -290,7 +290,7 @@
         modal.classList.add('active');
         spinner.classList.add('spinning');
         result.style.display = 'none';
-        spinBtn.style.display = 'none';
+        spinBtn.style.display = 'inline-block';
         
         let spinCount = 0;
         const spinInterval = setInterval(() => {
@@ -308,7 +308,6 @@
                 resultName.textContent = finalLoot.name;
                 resultDesc.textContent = finalLoot.description;
                 result.style.display = 'block';
-                spinBtn.style.display = 'inline-block';
                 
                 if (finalLoot.effect) {
                     finalLoot.effect();
@@ -553,6 +552,7 @@
         if (box.selected || box.correct) return;
         
         // Mark as selected
+        let blanksRevealed = 0;
         box.selected = true;
         boxElement.classList.add('flipped');
         
@@ -576,28 +576,20 @@
                 handleGameOver();
             }
             return;
-        }
-        
-        if (box.hasBone) {
+        } else if (box.hasBone) {
             // Found a bone - gain a heart!
             boxElement.classList.add('correct', 'dog-found');
             state.health++;
             updateStats();
             showHeartAnimation(boxElement);
             setMessage(`🦴 You found a bone! +1 heart! (${state.health} hearts)`, 'success');
-            return;
-        }
-        
-        if (box.hasChest) {
+        } else if (box.hasChest) {
             // Found a treasure chest - spin to win!
             boxElement.classList.add('correct', 'dog-found');
             showChestAnimation(boxElement);
             setMessage(`💎 You found a treasure chest! Spin to win!`, 'success');
             showSpinToWinModal();
-            return;
-        }
-        
-        if (box.hasDog) {
+        } else if (box.hasDog) {
             // Found a dog!
             box.correct = true;
             boxElement.classList.add('correct', 'dog-found');
@@ -619,49 +611,53 @@
             if (state.dogsFound === state.dogCount) {
                 handleRoundWin();
             }
-        } else {
-            // Clicked an empty box
-            if (state.powerups.bigFingers) {
-                // Big Fingers: reveal adjacent tiles
-                const adjacentIndices = getAdjacentIndices(index, state.colCount, state.rowCount, state.boxes.length);
-                let blanksRevealed = 1;
-                
-                adjacentIndices.forEach(adjIndex => {
-                    const adjBox = state.boxes[adjIndex];
-                    if (!adjBox.selected && !adjBox.correct) {
-                        handleBoxClick(adjIndex, true);
-                        if (!adjBox.hasDog && !adjBox.hasBone && !adjBox.hasChest && !adjBox.hasCat) {
-                            blanksRevealed++;
-                        }
-                    }
-                });
-                
-                // Lose heart only if 3+ blanks revealed
-                if (blanksRevealed >= 3) {
-                    state.health--;
-                    updateStats();
-                    if (state.health <= 0) {
-                        handleGameOver();
-                        return;
-                    }
-                    setMessage(`🖐️ Big Fingers! ${blanksRevealed} blanks revealed! -1 HP! (${state.health} hearts)`, 'error');
-                }
+        } 
+        // IF BOX IS BLANK
+        else {
+            // Magnifier: first mistake is free
+            if (state.powerups.magnifier && !state.magnifierUsed) {
+                state.magnifierUsed = true;
+                setMessage(`🔍 Magnifier! First mistake free!`, 'success');
+            } else if (state.powerups.bigFingers) { 
+                boxElement.classList.add('wrong', 'empty-clicked');
+                blanksRevealed++;
             } else {
-                // Magnifier: first mistake is free
-                if (state.powerups.magnifier && !state.magnifierUsed) {
-                    state.magnifierUsed = true;
-                    setMessage(`🔍 Magnifier! First mistake free!`, 'success');
+                boxElement.classList.add('wrong', 'empty-clicked');
+                state.health--;
+                updateStats();
+                
+                if (state.health <= 0) {
+                    handleGameOver();
                 } else {
-                    boxElement.classList.add('wrong', 'empty-clicked');
-                    state.health--;
-                    updateStats();
-                    
-                    if (state.health <= 0) {
-                        handleGameOver();
-                    } else {
-                        setMessage(`💔 You lost a heart! ${state.health} hearts remaining!`, 'error');
+                    setMessage(`💔 You lost a heart! ${state.health} hearts remaining!`, 'error');
+                }
+            }
+        }
+        
+        // Big Fingers: reveal adjacent tiles as well
+        if (state.powerups.bigFingers && !isBigFingersReveal) {
+
+            const adjacentIndices = getAdjacentIndices(index, state.colCount, state.rowCount, state.boxes.length);
+                            
+            adjacentIndices.forEach(adjIndex => {
+                const adjBox = state.boxes[adjIndex];
+                if (!adjBox.selected && !adjBox.correct) {
+                    handleBoxClick(adjIndex, true);
+                    if (!adjBox.hasDog && !adjBox.hasBone && !adjBox.hasChest && !adjBox.hasCat) {
+                        blanksRevealed++;
                     }
                 }
+            });
+            
+            // Lose heart only if 3+ blanks revealed
+            if (blanksRevealed >= 3) {
+                state.health--;
+                updateStats();
+                if (state.health <= 0) {
+                    handleGameOver();
+                    return;
+                }
+                setMessage(`🖐️ Big Fingers! ${blanksRevealed} blanks revealed! -1 HP! (${state.health} hearts)`, 'error');
             }
         }
     }
