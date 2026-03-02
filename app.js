@@ -79,7 +79,8 @@
         finalScore: document.getElementById('final-score'),
         finalRound: document.getElementById('final-round'),
         modalPlayAgain: document.getElementById('modal-play-again'),
-        debugRevealBtn: document.getElementById('debug-reveal-btn')
+        debugRevealBtn: document.getElementById('debug-reveal-btn'),
+        debugNextTierBtn: document.getElementById('debug-next-tier-btn')
     };
 
     // ========================================
@@ -171,7 +172,7 @@
 
     function updateTierColor() {
         state.tier = getTier();
-        const tierColor = CONFIG.TIER_COLORS[state.tier];
+        const tierColor = CONFIG.TIER_COLORS[state.tier] || CONFIG.TIER_COLORS[1];
         elements.gameBoard.style.setProperty('--tier-color', tierColor);
     }
     
@@ -479,6 +480,40 @@
     }
 
     /**
+     * Debug: Skip to next tier
+     */
+    function skipToNextTier() {
+        if (state.revealedTimeout) {
+            clearTimeout(state.revealedTimeout);
+            state.revealedTimeout = null;
+        }
+        if (state.nextRoundTimeout) {
+            clearTimeout(state.nextRoundTimeout);
+            state.nextRoundTimeout = null;
+        }
+        hideModal();
+        state.round++;
+
+        const currentTier = state.tier;
+        const targetTier = currentTier + 1;
+        
+        const targetColCount = targetTier + 3;
+        
+        state.colCount = targetColCount;
+        state.rowCount = 1;
+
+        updateTierColor();
+        state.gamePhase = 'ready';
+        
+        generateBoxes();
+        renderBoard();
+        
+        elements.gameBoard.classList.remove('locked');
+        elements.playBtn.disabled = false;
+        setMessage(`[DEBUG] Skipped to Tier ${state.tier}! Click Play to reveal the boxes!`, 'info');
+    }
+
+    /**
      * Start a new round
      */
     function startNextRound() {
@@ -586,6 +621,11 @@
         // Debug: Reveal all boxes for testing
         elements.debugRevealBtn.addEventListener('click', () => {
             revealBoxes();
+        });
+        
+        // Debug: Skip to next tier
+        elements.debugNextTierBtn.addEventListener('click', () => {
+            skipToNextTier();
         });
         
         setMessage('Click Play to reveal the boxes!', 'info');
