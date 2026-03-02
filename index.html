@@ -30,6 +30,11 @@
             </div>
         </div>
 
+        <div class="game-inventory" id="game-inventory">
+            <span class="inventory-label">Inventory:</span>
+            <div class="inventory-items" id="inventory-items"></div>
+        </div>
+
         <div class="game-message" id="game-message"></div>
 
         <div class="game-board" id="game-board">
@@ -63,6 +68,23 @@
                 <p>Reached Round: <strong id="final-round">1</strong></p>
             </div>
             <button class="btn btn-primary" id="modal-play-again">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Spin to Win Modal -->
+    <div class="modal-overlay" id="spin-modal">
+        <div class="modal spin-modal">
+            <h2 class="modal-title" style="color: #ffd700;">💎 Spin to Win! 💎</h2>
+            <div class="spin-container">
+                <div class="spin-spinner" id="spin-spinner">
+                    <span class="spin-item" id="spin-result-emoji">🎁</span>
+                </div>
+            </div>
+            <div class="spin-result" id="spin-result" style="display: none;">
+                <p class="spin-result-name" id="spin-result-name" style="font-size: 1.5rem; font-weight: bold; color: #ffd700; margin: 10px 0;"></p>
+                <p class="spin-result-desc" id="spin-result-desc" style="color: #aaa; margin-bottom: 15px;"></p>
+            </div>
+            <button class="btn btn-primary" id="spin-btn" style="display: none;" onclick="hideSpinModal()">Collect!</button>
         </div>
     </div>
 

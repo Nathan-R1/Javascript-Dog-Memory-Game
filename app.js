@@ -20,6 +20,7 @@
         DOG_EMOJI: '🐕',
         CAT_EMOJI: '🐱',
         BONE_EMOJI: '🦴',
+        CHEST_EMOJI: '🎁',
         EMPTY_EMOJI: '',
         MIN_DOGS: 1,
         MAX_DOG_RATIO: 0.4,
@@ -27,6 +28,8 @@
         MAX_CAT_RATIO: 0.1,
         MIN_PUPPIES: 1,
         MAX_BONE_RATIO: 0.25,
+        MIN_CHESTS: 1,
+        MAX_CHEST_RATIO: 0.05,
         POINTS_PER_DOG: 10,
         ROUND_BONUS: 5,
         TIER_COLORS: {
@@ -54,12 +57,28 @@
         dogCount: 0,
         catCount: 0,
         boneCount: 0,
+        chestCount: 0,
         dogsFound: 0,
         gamePhase: 'ready',
         revealedTimeout: null,
         nextRoundTimeout: null,
         tier: 1,
-        diedToCat: false
+        diedToCat: false,
+        powerups: {
+            magnifier: false,
+            catSwatter: false,
+            bombActive: false,
+            rich: false,
+            kibble: false,
+            magnet: false,
+            cursed: false,
+            shotgun: false,
+            bigFingers: false,
+            fogOfWar: false,
+            glitch: false
+        },
+        bigFingersBlanks: 0,
+        magnifierUsed: false
     };
 
     // ========================================
@@ -70,6 +89,7 @@
         dogsFound: document.getElementById('dogs-found'),
         score: document.getElementById('score'),
         heartsContainer: document.getElementById('hearts-container'),
+        inventoryItems: document.getElementById('inventory-items'),
         gameMessage: document.getElementById('game-message'),
         gameBoard: document.getElementById('game-board'),
         playBtn: document.getElementById('play-btn'),
@@ -114,6 +134,37 @@
         elements.gameMessage.className = `game-message ${type}`;
     }
 
+    function getAdjacentIndices(index, colCount, rowCount, totalBoxes) {
+        const adjacent = [];
+        const row = Math.floor(index / colCount);
+        const col = index % colCount;
+        
+        if (row > 0) adjacent.push(index - colCount);
+        if (row < rowCount - 1) adjacent.push(index + colCount);
+        if (col > 0) adjacent.push(index - 1);
+        if (col < colCount - 1) adjacent.push(index + 1);
+        
+        return adjacent;
+    }
+
+    function getAllAdjacentIndices(index, colCount, rowCount, totalBoxes) {
+        const adjacent = [];
+        const row = Math.floor(index / colCount);
+        const col = index % colCount;
+        
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (newRow >= 0 && newRow < rowCount && newCol >= 0 && newCol < colCount) {
+                    adjacent.push(newRow * colCount + newCol);
+                }
+            }
+        }
+        return adjacent;
+    }
+
     /**
      * Update all UI stats
      */
@@ -143,6 +194,40 @@
         }
     }
 
+    function updateInventory() {
+        if (!elements.inventoryItems) return;
+        
+        elements.inventoryItems.innerHTML = '';
+        
+        const itemTypes = [
+            { key: 'magnifier', emoji: '🔍', name: 'Magnifying Glass', desc: 'First mistake free' },
+            { key: 'catSwatter', emoji: '🕹️', name: 'Cat Swatter', desc: 'Cats = -3 HP' },
+            { key: 'bombActive', emoji: '💣', name: 'Bomb', desc: 'Flips 4 random tiles' },
+            { key: 'rich', emoji: '💰', name: 'Riches', desc: 'Score x2' },
+            { key: 'magnet', emoji: '🧲', name: 'Magnet', desc: 'Collect unclicked items' },
+            { key: 'cursed', emoji: '💀', name: 'Cursed', desc: 'No more chests' },
+            { key: 'shotgun', emoji: '🔫', name: 'Shotgun', desc: 'Reveal adjacent dogs' },
+            { key: 'bigFingers', emoji: '🖐️', name: 'Big Fingers', desc: 'Click adjacent, lose HP on 3+ blanks' },
+            { key: 'fogOfWar', emoji: '🌫️', name: 'Fog of War', desc: 'Goods = ✅, Bads = 💀' },
+            { key: 'glitch', emoji: '👾', name: 'GLITCH', desc: 'Random chaos!' }
+        ];
+        
+        itemTypes.forEach(item => {
+            if (state.powerups[item.key]) {
+                const el = document.createElement('div');
+                el.className = 'inventory-item';
+                el.textContent = item.emoji;
+                
+                const tooltip = document.createElement('span');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = `${item.name}: ${item.desc}`;
+                el.appendChild(tooltip);
+                
+                elements.inventoryItems.appendChild(el);
+            }
+        });
+    }
+
     function showHeartAnimation(boxElement) {
         const heartEl = document.createElement('div');
         heartEl.className = 'heart-gain';
@@ -154,6 +239,104 @@
         }, 800);
     }
 
+    function showChestAnimation(boxElement) {
+        const chestEl = document.createElement('div');
+        chestEl.className = 'chest-gain';
+        chestEl.textContent = '💎';
+        boxElement.appendChild(chestEl);
+        
+        setTimeout(() => {
+            chestEl.remove();
+        }, 1000);
+    }
+
+    const LOOT_TABLE = [
+        { id: 'magnifier', name: 'Magnifying Glass', emoji: '🔍', description: 'First mistake each round is free!', effect: () => { state.powerups.magnifier = true; }, weight: 8 },
+        { id: 'catSwatter', name: 'Cat Swatter', emoji: '🕹️', description: 'Cats are only -3 life instead of instant death!', effect: () => { state.powerups.catSwatter = true; }, weight: 8 },
+        { id: 'bomb', name: 'Bomb', emoji: '💣', description: 'At the start of the round, a bomb flips 4 random tiles!', effect: () => { state.powerups.bombActive = true; }, weight: 8 },
+        { id: 'rich', name: 'Riches', emoji: '💰', description: 'Immediately double your score!', effect: () => { state.powerups.rich = true; state.score *= 2; updateStats(); }, weight: 6 },
+        { id: 'kibble', name: 'Kibble', emoji: '🥣', description: '+10 Hearts!', effect: () => { state.health += 10; }, weight: 10 },
+        { id: 'magnet', name: 'Magnet', emoji: '🧲', description: 'Collect all unclicked bones and chests on win!', effect: () => { state.powerups.magnet = true; }, weight: 8 },
+        { id: 'cursed', name: 'Cursed', emoji: '💀', description: 'No more chests will spawn this game!', effect: () => { state.powerups.cursed = true; }, weight: 4 },
+        { id: 'shotgun', name: 'Shotgun', emoji: '🔫', description: 'Clicking a dog reveals all adjacent dogs!', effect: () => { state.powerups.shotgun = true; }, weight: 6 },
+        { id: 'bigFingers', name: 'Big Fingers', emoji: '🖐️', description: 'Click reveals all adjacent tiles. Lose heart only if 3+ blanks revealed.', effect: () => { state.powerups.bigFingers = true; }, weight: 8 },
+        { id: 'chests', name: 'More Chests!', emoji: '📦', description: 'Spin again!', weight: 6 },
+        { id: 'fogOfWar', name: 'Fog of War', emoji: '🌫️', description: 'Goods appear as ✅, bads as 💀 until revealed!', effect: () => { state.powerups.fogOfWar = true; }, weight: 6 },
+        { id: 'glitch', name: 'GLITCH', emoji: '👾', description: 'Random chaos!', effect: () => { state.powerups.glitch = true; }, weight: 2 }
+    ];
+
+    function getRandomLoot() {
+        /*const totalWeight = LOOT_TABLE.reduce((sum, item) => sum + item.weight, 0);
+        let random = Math.random() * totalWeight;
+        
+        for (const item of LOOT_TABLE) {
+            random -= item.weight;
+            if (random <= 0) {
+                return item;
+            }
+        }*/
+        return LOOT_TABLE[5];
+    }
+
+    function showSpinToWinModal() {
+        const modal = document.getElementById('spin-modal');
+        const spinner = document.getElementById('spin-spinner');
+        const result = document.getElementById('spin-result');
+        const resultEmoji = document.getElementById('spin-result-emoji');
+        const resultName = document.getElementById('spin-result-name');
+        const resultDesc = document.getElementById('spin-result-desc');
+        const spinBtn = document.getElementById('spin-btn');
+        
+        modal.classList.add('active');
+        spinner.classList.add('spinning');
+        result.style.display = 'none';
+        spinBtn.style.display = 'none';
+        
+        let spinCount = 0;
+        const spinInterval = setInterval(() => {
+            const temp = getRandomLoot();
+            resultEmoji.textContent = temp.emoji;
+            resultName.textContent = temp.name;
+            spinCount++;
+            
+            if (spinCount >= 15) {
+                clearInterval(spinInterval);
+                spinner.classList.remove('spinning');
+                
+                const finalLoot = getRandomLoot();
+                resultEmoji.textContent = finalLoot.emoji;
+                resultName.textContent = finalLoot.name;
+                resultDesc.textContent = finalLoot.description;
+                result.style.display = 'block';
+                spinBtn.style.display = 'inline-block';
+                
+                if (finalLoot.effect) {
+                    finalLoot.effect();
+                }
+                
+                if (finalLoot.id === 'kibble') {
+                    updateStats();
+                }
+                
+                if (finalLoot.id === 'chests') {
+                    setTimeout(() => {
+                        showSpinToWinModal();
+                    }, 1500);
+                }
+                
+                updateInventory();
+            }
+        }, 100);
+    }
+
+    function hideSpinModal() {
+        document.getElementById('spin-modal').classList.remove('active');
+    }
+
+    window.hideSpinModal = hideSpinModal;
+
+    // ========================================
+    // Start the Game
     // ========================================
     // Game Logic
     // ========================================
@@ -206,21 +389,34 @@
     }
 
     /**
-     * Generate boxes with random dog, cat, and bone placement
+     * Calculate number of treasure chests based on box count (tier 4+)
+     */
+    function calculateChestCount(boxCount, tier, isCursed) {
+        if (tier < 4 || isCursed) return 0;
+        const minChests = CONFIG.MIN_CHESTS;
+        const maxChests = Math.floor(boxCount * CONFIG.MAX_CHEST_RATIO);
+        return randomInt(minChests, maxChests);
+    }
+
+    /**
+     * Generate boxes with random dog, cat, bone, and chest placement
      */
     function generateBoxes() {
         const boxCount = getBoxCount();
         state.dogCount = calculateDogCount(boxCount);
         state.catCount = calculateCatCount(boxCount, state.tier);
         state.boneCount = calculateBoneCount(boxCount, state.tier);
+        state.chestCount = calculateChestCount(boxCount, state.tier, state.powerups.cursed);
         state.dogsFound = 0;
+        state.bigFingersBlanks = 0;
         
-        // Create array with dogs, cats, puppies, and empty spaces
+        // Create array with dogs, cats, bones, chests, and empty spaces
         const boxContents = [
             ...Array(state.dogCount).fill('dog'),
             ...Array(state.catCount).fill('cat'),
             ...Array(state.boneCount).fill('bone'),
-            ...Array(boxCount - state.dogCount - state.catCount - state.boneCount).fill('empty')
+            ...Array(state.chestCount).fill('chest'),
+            ...Array(boxCount - state.dogCount - state.catCount - state.boneCount - state.chestCount).fill('empty')
         ];
         
         // Shuffle the array
@@ -232,6 +428,7 @@
             hasDog: content === 'dog',
             hasCat: content === 'cat',
             hasBone: content === 'bone',
+            hasChest: content === 'chest',
             revealed: false,
             selected: false,
             correct: false
@@ -264,14 +461,27 @@
             // Back face (shows content when revealed)
             const backFace = document.createElement('div');
             backFace.className = 'box-face box-back';
-            if (box.hasDog) {
-                backFace.textContent = CONFIG.DOG_EMOJI;
-            } else if (box.hasCat) {
-                backFace.textContent = CONFIG.CAT_EMOJI;
-            } else if (box.hasBone) {
-                backFace.textContent = CONFIG.BONE_EMOJI;
+            if (state.powerups.fogOfWar) {
+                // Fog of War: goods show as ✅, bads as 💀
+                if (box.hasDog || box.hasBone || box.hasChest) {
+                    backFace.textContent = '✅';
+                } else if (box.hasCat) {
+                    backFace.textContent = '💀';
+                } else {
+                    backFace.textContent = CONFIG.EMPTY_EMOJI;
+                }
             } else {
-                backFace.textContent = CONFIG.EMPTY_EMOJI;
+                if (box.hasDog) {
+                    backFace.textContent = CONFIG.DOG_EMOJI;
+                } else if (box.hasCat) {
+                    backFace.textContent = CONFIG.CAT_EMOJI;
+                } else if (box.hasBone) {
+                    backFace.textContent = CONFIG.BONE_EMOJI;
+                } else if (box.hasChest) {
+                    backFace.textContent = CONFIG.CHEST_EMOJI;
+                } else {
+                    backFace.textContent = CONFIG.EMPTY_EMOJI;
+                }
             }
             
             boxElement.appendChild(frontFace);
@@ -332,7 +542,7 @@
     /**
      * Handle box click during gameplay
      */
-    function handleBoxClick(index) {
+    function handleBoxClick(index, isBigFingersReveal = false) {
         // Ignore clicks if not in playing phase or box already selected
         if (state.gamePhase !== 'playing') return;
         
@@ -347,10 +557,24 @@
         boxElement.classList.add('flipped');
         
         if (box.hasCat) {
-            // Clicked a cat - instant death!
+            // Clicked a cat
             boxElement.classList.add('wrong', 'empty-clicked');
-            state.diedToCat = true;
-            handleGameOver();
+            
+            // Check for catSwatter - reduces damage to -3 HP instead of death
+            if (state.powerups.catSwatter) {
+                state.health -= 3;
+                updateStats();
+                if (state.health <= 0) {
+                    state.health = 0;
+                    handleGameOver();
+                } else {
+                    setMessage(`🕹️ Cat Swatter! -3 HP! ${state.health} hearts remaining!`, 'error');
+                }
+            } else {
+                // Instant death!
+                state.diedToCat = true;
+                handleGameOver();
+            }
             return;
         }
         
@@ -364,6 +588,15 @@
             return;
         }
         
+        if (box.hasChest) {
+            // Found a treasure chest - spin to win!
+            boxElement.classList.add('correct', 'dog-found');
+            showChestAnimation(boxElement);
+            setMessage(`💎 You found a treasure chest! Spin to win!`, 'success');
+            showSpinToWinModal();
+            return;
+        }
+        
         if (box.hasDog) {
             // Found a dog!
             box.correct = true;
@@ -371,20 +604,64 @@
             state.dogsFound++;
             updateStats();
             
+            // Shotgun: reveal adjacent dogs
+            if (state.powerups.shotgun) {
+                const adjacentIndices = getAdjacentIndices(index, state.colCount, state.rowCount, state.boxes.length);
+                adjacentIndices.forEach(adjIndex => {
+                    const adjBox = state.boxes[adjIndex];
+                    if (adjBox.hasDog && !adjBox.correct) {
+                        handleBoxClick(adjIndex, true);
+                    }
+                });
+            }
+            
             // Check if all dogs found
             if (state.dogsFound === state.dogCount) {
                 handleRoundWin();
             }
         } else {
-            // Clicked an empty box - lose a heart!
-            boxElement.classList.add('wrong', 'empty-clicked');
-            state.health--;
-            updateStats();
-            
-            if (state.health <= 0) {
-                handleGameOver();
+            // Clicked an empty box
+            if (state.powerups.bigFingers) {
+                // Big Fingers: reveal adjacent tiles
+                const adjacentIndices = getAdjacentIndices(index, state.colCount, state.rowCount, state.boxes.length);
+                let blanksRevealed = 1;
+                
+                adjacentIndices.forEach(adjIndex => {
+                    const adjBox = state.boxes[adjIndex];
+                    if (!adjBox.selected && !adjBox.correct) {
+                        handleBoxClick(adjIndex, true);
+                        if (!adjBox.hasDog && !adjBox.hasBone && !adjBox.hasChest && !adjBox.hasCat) {
+                            blanksRevealed++;
+                        }
+                    }
+                });
+                
+                // Lose heart only if 3+ blanks revealed
+                if (blanksRevealed >= 3) {
+                    state.health--;
+                    updateStats();
+                    if (state.health <= 0) {
+                        handleGameOver();
+                        return;
+                    }
+                    setMessage(`🖐️ Big Fingers! ${blanksRevealed} blanks revealed! -1 HP! (${state.health} hearts)`, 'error');
+                }
             } else {
-                setMessage(`💔 You lost a heart! ${state.health} hearts remaining!`, 'error');
+                // Magnifier: first mistake is free
+                if (state.powerups.magnifier && !state.magnifierUsed) {
+                    state.magnifierUsed = true;
+                    setMessage(`🔍 Magnifier! First mistake free!`, 'success');
+                } else {
+                    boxElement.classList.add('wrong', 'empty-clicked');
+                    state.health--;
+                    updateStats();
+                    
+                    if (state.health <= 0) {
+                        handleGameOver();
+                    } else {
+                        setMessage(`💔 You lost a heart! ${state.health} hearts remaining!`, 'error');
+                    }
+                }
             }
         }
     }
@@ -396,9 +673,41 @@
         state.gamePhase = 'won';
         state.streak++;
         
+        // Magnet: collect unclicked bones and chests
+        let magnetBonus = 0;
+        let magnetChests = 0;
+        if (state.powerups.magnet) {
+            state.boxes.forEach((box, index) => {
+                if (!box.selected && !box.correct) {
+                    if (box.hasBone) {
+                        state.health++;
+                        magnetBonus++;
+                        const boxElement = elements.gameBoard.querySelector(`[data-index="${index}"]`);
+                        boxElement.classList.add('flipped', 'correct', 'dog-found');
+                        showHeartAnimation(boxElement);
+                    } else if (box.hasChest) {
+                        magnetBonus += 2;
+                        magnetChests++;
+                        const boxElement = elements.gameBoard.querySelector(`[data-index="${index}"]`);
+                        boxElement.classList.add('flipped', 'correct', 'dog-found');
+                        showChestAnimation(boxElement);
+                    }
+                }
+            });
+            if (magnetChests > 0) {
+                setTimeout(() => {
+                    setMessage(`💎 Magnet collected ${magnetChests} chest(s)! Spin to win!`, 'success');
+                    showSpinToWinModal();
+                }, 600);
+            }
+            if (magnetBonus > 0) {
+                updateStats();
+            }
+        }
+        
         // Calculate score
-        const roundScore = (state.dogCount * CONFIG.POINTS_PER_DOG) + 
-                          (state.round * CONFIG.ROUND_BONUS);
+        let roundScore = (state.dogCount * CONFIG.POINTS_PER_DOG) + 
+                        (state.round * CONFIG.ROUND_BONUS);
         state.score += roundScore;
         updateStats();
         
@@ -415,7 +724,8 @@
         });
         
         const streakText = state.streak > 1 ? ` (${state.streak} in a row!)` : '';
-        setMessage(`🎉 You win! +${roundScore} points!${streakText}`, 'success');
+        const magnetText = magnetBonus > 0 ? ` 🧲 Magnet collected ${magnetBonus} item(s)!` : '';
+        setMessage(`🎉 You win! +${roundScore} points!${streakText}${magnetText}`, 'success');
         
         // Auto-start next round after delay
         state.nextRoundTimeout = setTimeout(() => {
@@ -523,6 +833,7 @@
         }
         hideModal();
         state.round++;
+        state.magnifierUsed = false;
 
         if (state.rowCount >= state.colCount) {
             state.colCount++;
@@ -536,6 +847,48 @@
         
         generateBoxes();
         renderBoard();
+        
+        // Bomb: flip 4 random tiles at start of round
+        if (state.powerups.bombActive) {
+            const boxElements = Array.from(elements.gameBoard.querySelectorAll('.box'));
+            const shuffled = shuffleArray([...Array(boxElements.length).keys()]);
+            const bombIndices = shuffled.slice(0, 4);
+            bombIndices.forEach(idx => {
+                boxElements[idx].classList.add('flipped');
+            });
+        }
+        
+        // GLITCH: random chaos - swap some box contents
+        if (state.powerups.glitch) {
+            const glitchCount = Math.min(3, Math.floor(state.boxes.length / 4));
+            const boxElements = Array.from(elements.gameBoard.querySelectorAll('.box'));
+            const shuffledIndices = shuffleArray([...Array(state.boxes.length).keys()]);
+            const glitchIndices = shuffledIndices.slice(0, glitchCount * 2);
+            
+            for (let i = 0; i < glitchIndices.length; i += 2) {
+                const idx1 = glitchIndices[i];
+                const idx2 = glitchIndices[i + 1];
+                if (idx2 !== undefined) {
+                    const tempDog = state.boxes[idx1].hasDog;
+                    const tempCat = state.boxes[idx1].hasCat;
+                    const tempBone = state.boxes[idx1].hasBone;
+                    const tempChest = state.boxes[idx1].hasChest;
+                    
+                    state.boxes[idx1].hasDog = state.boxes[idx2].hasDog;
+                    state.boxes[idx1].hasCat = state.boxes[idx2].hasCat;
+                    state.boxes[idx1].hasBone = state.boxes[idx2].hasBone;
+                    state.boxes[idx1].hasChest = state.boxes[idx2].hasChest;
+                    
+                    state.boxes[idx2].hasDog = tempDog;
+                    state.boxes[idx2].hasCat = tempCat;
+                    state.boxes[idx2].hasBone = tempBone;
+                    state.boxes[idx2].hasChest = tempChest;
+                }
+            }
+            
+            renderBoard();
+            setMessage('👾 GLITCH! The boxes have been shuffled!', 'error');
+        }
         
         elements.playBtn.disabled = false;
         setMessage('Click Play to reveal the boxes!', 'info');
@@ -565,10 +918,25 @@
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
         state.diedToCat = false;
+        state.magnifierUsed = false;
+        state.powerups = {
+            magnifier: false,
+            catSwatter: false,
+            bombActive: false,
+            rich: false,
+            kibble: false,
+            magnet: false,
+            cursed: false,
+            shotgun: false,
+            bigFingers: false,
+            fogOfWar: false,
+            glitch: false
+        };
 
         updateTierColor();
         generateBoxes();
         renderBoard();
+        updateInventory();
         
         elements.gameBoard.classList.remove('locked');
         elements.playBtn.disabled = false;
@@ -582,6 +950,7 @@
         updateTierColor();
         generateBoxes();
         renderBoard();
+        updateInventory();
         
         // Set up event listeners
         elements.playBtn.addEventListener('click', () => {
@@ -627,6 +996,12 @@
         elements.debugNextTierBtn.addEventListener('click', () => {
             skipToNextTier();
         });
+        
+        // Spin button event listener
+        const spinBtn = document.getElementById('spin-btn');
+        if (spinBtn) {
+            spinBtn.addEventListener('click', hideSpinModal);
+        }
         
         setMessage('Click Play to reveal the boxes!', 'info');
     }

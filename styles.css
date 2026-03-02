@@ -135,6 +135,77 @@ body {
 }
 
 /* ========================================
+   Inventory
+   ======================================== */
+
+.game-inventory {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.inventory-label {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.inventory-items {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 44px;
+    align-items: center;
+}
+
+.inventory-item {
+    width: 40px;
+    height: 40px;
+    background: var(--color-surface);
+    border: 2px solid var(--tier-color);
+    border-radius: 8px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: help;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.inventory-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--tier-color);
+}
+
+.inventory-item .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-bg);
+    border: 1px solid var(--color-text-muted);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.inventory-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========================================
    Message Display
    ======================================== */
 
@@ -285,6 +356,97 @@ body {
         opacity: 0;
         transform: translate(-50%, -150%) scale(1);
     }
+}
+
+.chest-gain {
+    position: absolute;
+    font-size: 3rem;
+    animation: chest-pop 1s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes chest-pop {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    }
+    25% {
+        opacity: 1;
+        transform: translate(-50%, -80%) scale(1.3) rotate(15deg);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -110%) scale(1.1) rotate(-10deg);
+    }
+    75% {
+        opacity: 1;
+        transform: translate(-50%, -130%) scale(1) rotate(5deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(0.8) rotate(0deg);
+    }
+}
+
+/* ========================================
+   Spin to Win Modal
+   ======================================== */
+
+.spin-modal {
+    background: var(--color-surface);
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.9) translateY(20px);
+    transition: transform var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-overlay.active .spin-modal {
+    transform: scale(1) translateY(0);
+}
+
+.spin-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.spin-spinner {
+    font-size: 4rem;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.spin-spinner.spinning .spin-item {
+    animation: spin-bounce 0.2s infinite;
+}
+
+@keyframes spin-bounce {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+}
+
+.spin-result {
+    text-align: center;
+    animation: result-pop 0.5s ease-out;
+}
+
+@keyframes result-pop {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 /* ========================================
