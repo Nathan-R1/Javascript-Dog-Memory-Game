@@ -30,7 +30,6 @@
         MAX_BONE_RATIO: 0.25,
         POINTS_PER_DOG: 10,
         ROUND_BONUS: 5,
-        MAX_HEALTH: 3,
         TIER_COLORS: {
             1: '#3b82f6',
             2: '#a855f7',
@@ -129,11 +128,18 @@
      */
     function renderHearts() {
         elements.heartsContainer.innerHTML = '';
-        for (let i = 0; i < CONFIG.MAX_HEALTH; i++) {
-            const heart = document.createElement('span');
-            heart.className = 'heart';
-            heart.textContent = i < state.health ? '❤️' : '🖤';
-            elements.heartsContainer.appendChild(heart);
+        if (state.health > 3) {
+            const heartText = document.createElement('span');
+            heartText.className = 'heart';
+            heartText.textContent = `${state.health} ❤️`;
+            elements.heartsContainer.appendChild(heartText);
+        } else {
+            for (let i = 0; i < Math.max(3, state.health); i++) {
+                const heart = document.createElement('span');
+                heart.className = 'heart';
+                heart.textContent = i < state.health ? '❤️' : '🖤';
+                elements.heartsContainer.appendChild(heart);
+            }
         }
     }
 
@@ -359,12 +365,10 @@
         if (box.hasBone) {
             // Found a bone - gain a heart!
             boxElement.classList.add('correct', 'dog-found');
-            if (state.health < CONFIG.MAX_HEALTH) {
-                state.health++;
-            }
+            state.health++;
             updateStats();
             showHeartAnimation(boxElement);
-            setMessage(`🦴 You found a bone! +1 heart! (${state.health}/${CONFIG.MAX_HEALTH})`, 'success');
+            setMessage(`🦴 You found a bone! +1 heart! (${state.health} hearts)`, 'success');
             return;
         }
         
