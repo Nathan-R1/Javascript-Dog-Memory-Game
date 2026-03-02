@@ -18,9 +18,13 @@
         INITIAL_ROWS: 1,
         REVEAL_DURATION: 1000,
         DOG_EMOJI: '🐕',
+        CAT_EMOJI: '🐱',
         EMPTY_EMOJI: '',
         MIN_DOGS: 1,
         MAX_DOG_RATIO: 0.4,
+        MIN_CATS: 1,
+        MAX_CAT_RATIO: 0.1,
+        CAT_HEART_LOSS: 3,
         POINTS_PER_DOG: 10,
         ROUND_BONUS: 5,
         MAX_HEALTH: 3,
@@ -47,11 +51,13 @@
         colCount: CONFIG.INITIAL_COLS,
         rowCount: CONFIG.INITIAL_ROWS,
         dogCount: 0,
+        catCount: 0,
         dogsFound: 0,
         gamePhase: 'ready',
         revealedTimeout: null,
         nextRoundTimeout: null,
-        tier: 1
+        tier: 1,
+        diedToCat: false
     };
 
     // ========================================
@@ -159,17 +165,29 @@
     }
 
     /**
-     * Generate boxes with random dog placement
+     * Calculate number of cats based on box count (tier 2+)
+     */
+    function calculateCatCount(boxCount, tier) {
+        if (tier < 2) return 0;
+        const minCats = CONFIG.MIN_CATS;
+        const maxCats = Math.floor(boxCount * CONFIG.MAX_CAT_RATIO);
+        return randomInt(minCats, maxCats);
+    }
+
+    /**
+     * Generate boxes with random dog and cat placement
      */
     function generateBoxes() {
         const boxCount = getBoxCount();
         state.dogCount = calculateDogCount(boxCount);
+        state.catCount = calculateCatCount(boxCount, state.tier);
         state.dogsFound = 0;
         
-        // Create array with dogs and empty spaces
+        // Create array with dogs, cats, and empty spaces
         const boxContents = [
             ...Array(state.dogCount).fill('dog'),
-            ...Array(boxCount - state.dogCount).fill('empty')
+            ...Array(state.catCount).fill('cat'),
+            ...Array(boxCount - state.dogCount - state.catCount).fill('empty')
         ];
         
         // Shuffle the array
@@ -179,6 +197,7 @@
         state.boxes = shuffled.map((content, index) => ({
             id: index,
             hasDog: content === 'dog',
+            hasCat: content === 'cat',
             revealed: false,
             selected: false,
             correct: false
@@ -211,7 +230,13 @@
             // Back face (shows content when revealed)
             const backFace = document.createElement('div');
             backFace.className = 'box-face box-back';
-            backFace.textContent = box.hasDog ? CONFIG.DOG_EMOJI : CONFIG.EMPTY_EMOJI;
+            if (box.hasDog) {
+                backFace.textContent = CONFIG.DOG_EMOJI;
+            } else if (box.hasCat) {
+                backFace.textContent = CONFIG.CAT_EMOJI;
+            } else {
+                backFace.textContent = CONFIG.EMPTY_EMOJI;
+            }
             
             boxElement.appendChild(frontFace);
             boxElement.appendChild(backFace);
@@ -284,6 +309,22 @@
         // Mark as selected
         box.selected = true;
         boxElement.classList.add('flipped');
+        
+        if (box.hasCat) {
+            // Clicked a cat - lose 3 hearts immediately!
+            boxElement.classList.add('wrong', 'empty-clicked');
+            state.health -= CONFIG.CAT_HEART_LOSS;
+            if (state.health < 0) state.health = 0;
+            updateStats();
+            
+            if (state.health <= 0) {
+                state.diedToCat = true;
+                handleGameOver();
+            } else {
+                setMessage(`😿 You hit a cat! Lost ${CONFIG.CAT_HEART_LOSS} hearts! ${state.health} hearts remaining!`, 'error');
+            }
+            return;
+        }
         
         if (box.hasDog) {
             // Found a dog!
@@ -359,7 +400,8 @@
             }
         });
         
-        setMessage('💥 You ran out of hearts! Game Over!', 'error');
+        const catMessage = state.diedToCat ? '😿 You died to a cat! ' : '';
+        setMessage(catMessage + '💥 You ran out of hearts! Game Over!', 'error');
         
         // Show lose modal
         setTimeout(() => {
@@ -378,10 +420,11 @@
                 `Amazing! You found all ${state.dogCount} dogs and earned ${roundScore} points!`;
             elements.modalPlayAgain.textContent = 'Next Round';
         } else {
-            elements.modalTitle.textContent = '💥 Game Over!';
+            elements.modalTitle.textContent = state.diedToCat ? '😿 Cat Fatality!' : '💥 Game Over!';
             elements.modalTitle.className = 'modal-title lose';
+            const catText = state.diedToCat ? 'The cats got you! ' : '';
             elements.modalMessage.textContent = 
-                'You ran out of hearts! Better luck next time.';
+                catText + 'You ran out of hearts! Better luck next time.';
             elements.modalPlayAgain.textContent = 'Play Again';
         }
         
@@ -449,6 +492,7 @@
         state.colCount = CONFIG.INITIAL_COLS;
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
+        state.diedToCat = false;
 
         updateTierColor();
         generateBoxes();
