@@ -74,8 +74,8 @@
             cursed: false,
             shotgun: false,
             bigFingers: false,
-            fogOfWar: false,
-            glitch: false
+            chests:false,
+            fogOfWar: false
         },
         bigFingersBlanks: 0,
         magnifierUsed: false
@@ -208,8 +208,8 @@
             { key: 'cursed', emoji: '💀', name: 'Cursed', desc: 'No more chests' },
             { key: 'shotgun', emoji: '🔫', name: 'Shotgun', desc: 'Reveal adjacent dogs' },
             { key: 'bigFingers', emoji: '🖐️', name: 'Big Fingers', desc: 'Click adjacent, lose HP on 3+ blanks' },
-            { key: 'fogOfWar', emoji: '🌫️', name: 'Fog of War', desc: 'Goods = ✅, Bads = 💀' },
-            { key: 'glitch', emoji: '👾', name: 'GLITCH', desc: 'Random chaos!' }
+            { key: 'chests', emoji: '📦', name: 'Chests', desc: 'Extra powerups' },
+            { key: 'fogOfWar', emoji: '🌫️', name: 'Fog of War', desc: 'Goods = ✅, Bads = 💀' }
         ];
         
         itemTypes.forEach(item => {
@@ -260,22 +260,31 @@
         { id: 'cursed', name: 'Cursed', emoji: '💀', description: 'No more chests will spawn this game!', effect: () => { state.powerups.cursed = true; }, weight: 4 },
         { id: 'shotgun', name: 'Shotgun', emoji: '🔫', description: 'Clicking a dog reveals all adjacent dogs!', effect: () => { state.powerups.shotgun = true; }, weight: 6 },
         { id: 'bigFingers', name: 'Big Fingers', emoji: '🖐️', description: 'Click reveals all adjacent tiles. Lose heart only if 3+ blanks revealed.', effect: () => { state.powerups.bigFingers = true; }, weight: 8 },
-        { id: 'chests', name: 'More Chests!', emoji: '📦', description: 'Spin again!', weight: 6 },
-        { id: 'fogOfWar', name: 'Fog of War', emoji: '🌫️', description: 'Goods appear as ✅, bads as 💀 until revealed!', effect: () => { state.powerups.fogOfWar = true; }, weight: 6 },
-        { id: 'glitch', name: 'GLITCH', emoji: '👾', description: 'Random chaos!', effect: () => { state.powerups.glitch = true; }, weight: 2 }
+        { id: 'chests', name: 'More Chests!', emoji: '📦', description: 'Spin again!', effect: () => { state.powerups.chests = true; }, weight: 6 },
+        { id: 'fogOfWar', name: 'Fog of War', emoji: '🌫️', description: 'Goods appear as ✅, bads as 💀 until revealed!', effect: () => { state.powerups.fogOfWar = true; }, weight: 6 }
     ];
 
     function getRandomLoot() {
-        /*const totalWeight = LOOT_TABLE.reduce((sum, item) => sum + item.weight, 0);
+
+        // Remove powerups already owned
+        const availableLoot = LOOT_TABLE.filter(item => {
+            return !state.powerups[item.id];
+        });
+
+        // If everything is owned, fallback to full table
+        const table = availableLoot.length > 0 ? availableLoot : LOOT_TABLE;
+
+        const totalWeight = table.reduce((sum, item) => sum + item.weight, 0);
         let random = Math.random() * totalWeight;
-        
-        for (const item of LOOT_TABLE) {
+
+        for (const item of table) {
             random -= item.weight;
             if (random <= 0) {
                 return item;
             }
-        }*/
-        return LOOT_TABLE[8];
+        }
+
+        return table[0];
     }
 
     function showSpinToWinModal() {
@@ -318,6 +327,9 @@
                 }
                 
                 if (finalLoot.id === 'chests') {
+                    setTimeout(() => {
+                        showSpinToWinModal();
+                    }, 1500);
                     setTimeout(() => {
                         showSpinToWinModal();
                     }, 1500);
@@ -434,6 +446,43 @@
         }));
         
         updateStats();
+    }
+
+    // HELPER FUNCTION FOR THE GLITCH POWERUP
+    function generateLetterMask(cols, rows) {
+
+        const canvas = document.createElement("canvas");
+        canvas.width = cols;
+        canvas.height = rows;
+
+        const ctx = canvas.getContext("2d");
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const letter = letters[Math.floor(Math.random() * letters.length)];
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, cols, rows);
+
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${rows * 0.9}px Arial`;
+
+        ctx.fillText(letter, cols / 2, rows / 2);
+
+        const imageData = ctx.getImageData(0, 0, cols, rows).data;
+
+        const mask = [];
+
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const i = (y * cols + x) * 4;
+                const brightness = imageData[i];
+                mask.push(brightness > 10);
+            }
+        }
+
+        return mask;
     }
 
     /**
@@ -854,38 +903,6 @@
             });
         }
         
-        // GLITCH: random chaos - swap some box contents
-        if (state.powerups.glitch) {
-            const glitchCount = Math.min(3, Math.floor(state.boxes.length / 4));
-            const boxElements = Array.from(elements.gameBoard.querySelectorAll('.box'));
-            const shuffledIndices = shuffleArray([...Array(state.boxes.length).keys()]);
-            const glitchIndices = shuffledIndices.slice(0, glitchCount * 2);
-            
-            for (let i = 0; i < glitchIndices.length; i += 2) {
-                const idx1 = glitchIndices[i];
-                const idx2 = glitchIndices[i + 1];
-                if (idx2 !== undefined) {
-                    const tempDog = state.boxes[idx1].hasDog;
-                    const tempCat = state.boxes[idx1].hasCat;
-                    const tempBone = state.boxes[idx1].hasBone;
-                    const tempChest = state.boxes[idx1].hasChest;
-                    
-                    state.boxes[idx1].hasDog = state.boxes[idx2].hasDog;
-                    state.boxes[idx1].hasCat = state.boxes[idx2].hasCat;
-                    state.boxes[idx1].hasBone = state.boxes[idx2].hasBone;
-                    state.boxes[idx1].hasChest = state.boxes[idx2].hasChest;
-                    
-                    state.boxes[idx2].hasDog = tempDog;
-                    state.boxes[idx2].hasCat = tempCat;
-                    state.boxes[idx2].hasBone = tempBone;
-                    state.boxes[idx2].hasChest = tempChest;
-                }
-            }
-            
-            renderBoard();
-            setMessage('👾 GLITCH! The boxes have been shuffled!', 'error');
-        }
-        
         elements.playBtn.disabled = false;
         setMessage('Click Play to reveal the boxes!', 'info');
     }
@@ -925,8 +942,8 @@
             cursed: false,
             shotgun: false,
             bigFingers: false,
-            fogOfWar: false,
-            glitch: false
+            chests: false,
+            fogOfWar: false
         };
 
         updateTierColor();
