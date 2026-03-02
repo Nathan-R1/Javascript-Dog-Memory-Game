@@ -19,12 +19,15 @@
         REVEAL_DURATION: 1000,
         DOG_EMOJI: '🐕',
         CAT_EMOJI: '🐱',
+        BONE_EMOJI: '🦴',
         EMPTY_EMOJI: '',
         MIN_DOGS: 1,
         MAX_DOG_RATIO: 0.4,
         MIN_CATS: 1,
         MAX_CAT_RATIO: 0.1,
         CAT_HEART_LOSS: 3,
+        MIN_PUPPIES: 1,
+        MAX_BONE_RATIO: 0.25,
         POINTS_PER_DOG: 10,
         ROUND_BONUS: 5,
         MAX_HEALTH: 3,
@@ -52,6 +55,7 @@
         rowCount: CONFIG.INITIAL_ROWS,
         dogCount: 0,
         catCount: 0,
+        boneCount: 0,
         dogsFound: 0,
         gamePhase: 'ready',
         revealedTimeout: null,
@@ -133,6 +137,17 @@
         }
     }
 
+    function showHeartAnimation(boxElement) {
+        const heartEl = document.createElement('div');
+        heartEl.className = 'heart-gain';
+        heartEl.textContent = '❤️';
+        boxElement.appendChild(heartEl);
+        
+        setTimeout(() => {
+            heartEl.remove();
+        }, 800);
+    }
+
     // ========================================
     // Game Logic
     // ========================================
@@ -165,29 +180,41 @@
     }
 
     /**
-     * Calculate number of cats based on box count (tier 2+)
+     * Calculate number of cats based on box count (tier 3+)
      */
     function calculateCatCount(boxCount, tier) {
-        if (tier < 2) return 0;
+        if (tier < 3) return 0;
         const minCats = CONFIG.MIN_CATS;
         const maxCats = Math.floor(boxCount * CONFIG.MAX_CAT_RATIO);
         return randomInt(minCats, maxCats);
     }
 
     /**
-     * Generate boxes with random dog and cat placement
+     * Calculate number of bones based on box count (tier 2+)
+     */
+    function calculateBoneCount(boxCount, tier) {
+        if (tier < 2) return 0;
+        const minBones = CONFIG.MIN_PUPPIES;
+        const maxBones = Math.floor(boxCount * CONFIG.MAX_BONE_RATIO);
+        return randomInt(minBones, maxBones);
+    }
+
+    /**
+     * Generate boxes with random dog, cat, and bone placement
      */
     function generateBoxes() {
         const boxCount = getBoxCount();
         state.dogCount = calculateDogCount(boxCount);
         state.catCount = calculateCatCount(boxCount, state.tier);
+        state.boneCount = calculateBoneCount(boxCount, state.tier);
         state.dogsFound = 0;
         
-        // Create array with dogs, cats, and empty spaces
+        // Create array with dogs, cats, puppies, and empty spaces
         const boxContents = [
             ...Array(state.dogCount).fill('dog'),
             ...Array(state.catCount).fill('cat'),
-            ...Array(boxCount - state.dogCount - state.catCount).fill('empty')
+            ...Array(state.boneCount).fill('bone'),
+            ...Array(boxCount - state.dogCount - state.catCount - state.boneCount).fill('empty')
         ];
         
         // Shuffle the array
@@ -198,6 +225,7 @@
             id: index,
             hasDog: content === 'dog',
             hasCat: content === 'cat',
+            hasBone: content === 'bone',
             revealed: false,
             selected: false,
             correct: false
@@ -234,6 +262,8 @@
                 backFace.textContent = CONFIG.DOG_EMOJI;
             } else if (box.hasCat) {
                 backFace.textContent = CONFIG.CAT_EMOJI;
+            } else if (box.hasBone) {
+                backFace.textContent = CONFIG.BONE_EMOJI;
             } else {
                 backFace.textContent = CONFIG.EMPTY_EMOJI;
             }
@@ -323,6 +353,18 @@
             } else {
                 setMessage(`😿 You hit a cat! Lost ${CONFIG.CAT_HEART_LOSS} hearts! ${state.health} hearts remaining!`, 'error');
             }
+            return;
+        }
+        
+        if (box.hasBone) {
+            // Found a bone - gain a heart!
+            boxElement.classList.add('correct', 'dog-found');
+            if (state.health < CONFIG.MAX_HEALTH) {
+                state.health++;
+            }
+            updateStats();
+            showHeartAnimation(boxElement);
+            setMessage(`🦴 You found a bone! +1 heart! (${state.health}/${CONFIG.MAX_HEALTH})`, 'success');
             return;
         }
         
