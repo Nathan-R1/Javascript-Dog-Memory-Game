@@ -25,7 +25,6 @@
         MAX_DOG_RATIO: 0.4,
         MIN_CATS: 1,
         MAX_CAT_RATIO: 0.1,
-        CAT_HEART_LOSS: 3,
         MIN_PUPPIES: 1,
         MAX_BONE_RATIO: 0.25,
         POINTS_PER_DOG: 10,
@@ -48,7 +47,7 @@
         round: 1,
         score: 0,
         streak: 0,
-        health: CONFIG.MAX_HEALTH,
+        health: 3,
         boxes: [],
         colCount: CONFIG.INITIAL_COLS,
         rowCount: CONFIG.INITIAL_ROWS,
@@ -347,18 +346,10 @@
         boxElement.classList.add('flipped');
         
         if (box.hasCat) {
-            // Clicked a cat - lose 3 hearts immediately!
+            // Clicked a cat - instant death!
             boxElement.classList.add('wrong', 'empty-clicked');
-            state.health -= CONFIG.CAT_HEART_LOSS;
-            if (state.health < 0) state.health = 0;
-            updateStats();
-            
-            if (state.health <= 0) {
-                state.diedToCat = true;
-                handleGameOver();
-            } else {
-                setMessage(`😿 You hit a cat! Lost ${CONFIG.CAT_HEART_LOSS} hearts! ${state.health} hearts remaining!`, 'error');
-            }
+            state.diedToCat = true;
+            handleGameOver();
             return;
         }
         
@@ -534,7 +525,7 @@
         state.round = 1;
         state.score = 0;
         state.streak = 0;
-        state.health = CONFIG.MAX_HEALTH;
+        state.health = 3;
         state.colCount = CONFIG.INITIAL_COLS;
         state.rowCount = CONFIG.INITIAL_ROWS;
         state.gamePhase = 'ready';
