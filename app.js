@@ -43,6 +43,12 @@
     };
 
     // ========================================
+    // Debug Mode
+    // ========================================
+    
+    const DEBUG = new URLSearchParams(location.search).has('debug');
+
+    // ========================================
     // Game State
     // ========================================
     
@@ -960,6 +966,11 @@
      * Initialize the game
      */
     function init() {
+        if (DEBUG) {
+            const panel = document.getElementById('debug-panel');
+            if (panel) panel.style.display = '';
+        }
+
         updateTierColor();
         generateBoxes();
         renderBoard();
