@@ -497,6 +497,36 @@
         return mask;
     }
 
+    function constrainBoard() {
+        const board = elements.gameBoard;
+        if (!board || board.children.length === 0) return;
+
+        const style = getComputedStyle(board);
+        const gap = parseFloat(style.gap) || 8;
+        const padLeft = parseFloat(style.paddingLeft) || 20;
+        const padRight = parseFloat(style.paddingRight) || 20;
+        const padTop = parseFloat(style.paddingTop) || 20;
+        const padBottom = parseFloat(style.paddingBottom) || 20;
+
+        const cols = state.colCount;
+        const rows = state.rowCount;
+
+        const availWidth = board.clientWidth - padLeft - padRight;
+        const naturalBoxWidth = (availWidth - (cols - 1) * gap) / cols;
+
+        const boardTop = board.getBoundingClientRect().top;
+        const availHeight = window.innerHeight - boardTop - padBottom;
+        const maxBoxHeight = (availHeight - padTop - (rows - 1) * gap) / rows;
+
+        const boxSize = Math.min(naturalBoxWidth, Math.max(60, maxBoxHeight));
+
+        if (boxSize < naturalBoxWidth) {
+            board.style.setProperty('--box-size', boxSize + 'px');
+        } else {
+            board.style.removeProperty('--box-size');
+        }
+    }
+
     /**
      * Render the game board
      */
@@ -558,6 +588,8 @@
             
             elements.gameBoard.appendChild(boxElement);
         });
+
+        requestAnimationFrame(constrainBoard);
     }
 
     /**
@@ -1016,6 +1048,9 @@
                 hideModal();
             }
         });
+        
+        // Re-constrain board on resize
+        window.addEventListener('resize', constrainBoard);
         
         // Debug: Reveal all boxes for testing
         elements.debugRevealBtn.addEventListener('click', () => {

@@ -236,7 +236,7 @@ body {
 }
 
 .game-message.info {
-    color: var(--color-text-muted);
+    color: #fff;
 }
 
 .game-message.success {
@@ -253,7 +253,8 @@ body {
 
 .game-board {
     display: grid;
-    grid-template-columns: repeat(var(--box-columns, 4), 1fr);
+    grid-template-columns: repeat(var(--box-columns, 4), var(--box-size, 1fr));
+    justify-content: center;
     gap: 8px;
     padding: 20px;
     background: rgba(22, 33, 62, 0.5) !important;
