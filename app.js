@@ -95,6 +95,7 @@
         dogsFound: document.getElementById('dogs-found'),
         score: document.getElementById('score'),
         heartsContainer: document.getElementById('hearts-container'),
+        inventory: document.getElementById('game-inventory'),
         inventoryItems: document.getElementById('inventory-items'),
         gameMessage: document.getElementById('game-message'),
         gameBoard: document.getElementById('game-board'),
@@ -204,6 +205,11 @@
         if (!elements.inventoryItems) return;
         
         elements.inventoryItems.innerHTML = '';
+
+        const hasItems = Object.values(state.powerups).some(v => v);
+        if (elements.inventory) {
+            elements.inventory.style.display = hasItems ? '' : 'none';
+        }
         
         const itemTypes = [
             { key: 'magnifier', emoji: '🔍', name: 'Magnifying Glass', desc: 'First mistake free' },

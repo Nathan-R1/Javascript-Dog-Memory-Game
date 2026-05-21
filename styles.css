@@ -47,9 +47,10 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background: var(--color-bg);
-    background-image: 
-        radial-gradient(ellipse at top, #1f2937 0%, transparent 50%),
-        radial-gradient(ellipse at bottom, #0f172a 0%, transparent 50%);
+    background-image: url('https://cdnb.artstation.com/p/assets/images/images/048/922/651/large/seirra-swanson-grassybackground.jpg?1651250351');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--color-text);
     min-height: 100vh;
     display: flex;
@@ -67,6 +68,7 @@ body {
     max-width: 800px;
     width: 100%;
     margin: 0 auto;
+    background: transparent !important;
 }
 
 /* ========================================
@@ -82,9 +84,13 @@ body {
     font-size: clamp(2rem, 8vw, 3rem);
     font-weight: 800;
     color: var(--color-primary);
-    text-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+    text-shadow: 0 0 20px rgba(233, 69, 96, 0.4), 0 0 8px #fff, 0 0 16px rgba(255,255,255,0.5);
     margin-bottom: 8px;
     letter-spacing: 2px;
+    background: url('https://static.vecteezy.com/system/resources/thumbnails/002/193/057/small/wood-texture-background-free-vector.jpg') center/cover;
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
 }
 
 .game-subtitle {
@@ -105,7 +111,9 @@ body {
 }
 
 .stat {
-    background: var(--color-surface);
+    box-sizing: content-box;
+    background: rgba(22, 33, 62, 0.7) !important;
+    backdrop-filter: blur(4px);
     padding: 12px 24px;
     border-radius: var(--radius-md);
     text-align: center;
@@ -145,11 +153,16 @@ body {
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    background: rgba(22, 33, 62, 0.7) !important;
+    backdrop-filter: blur(4px);
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .inventory-label {
     font-size: 0.9rem;
-    color: var(--color-text-muted);
+    color: #fff;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -166,7 +179,8 @@ body {
 .inventory-item {
     width: 40px;
     height: 40px;
-    background: var(--color-surface);
+    background: rgba(22, 33, 62, 0.7) !important;
+    backdrop-filter: blur(4px);
     border: 2px solid var(--tier-color);
     border-radius: 8px;
     display: flex !important;
@@ -242,7 +256,8 @@ body {
     grid-template-columns: repeat(var(--box-columns, 4), 1fr);
     gap: 8px;
     padding: 20px;
-    background: var(--color-surface);
+    background: rgba(22, 33, 62, 0.5) !important;
+    backdrop-filter: blur(4px);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     margin-bottom: 24px;
@@ -307,7 +322,7 @@ body {
 }
 
 .box-front {
-    background: linear-gradient(135deg, var(--color-box-back) 0%, var(--color-box-front) 100%);
+    background: url('https://opengameart.org/sites/default/files/crate_0.png') center/cover;
     border: 2px solid var(--tier-color);
     box-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 30%, transparent);
 }
@@ -537,10 +552,11 @@ body {
    ======================================== */
 
 .game-instructions {
-    background: var(--color-surface);
+    background: url('https://static.vecteezy.com/system/resources/thumbnails/002/193/057/small/wood-texture-background-free-vector.jpg') center/cover;
     padding: 24px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    color: #fff;
 }
 
 .game-instructions h3 {
@@ -548,6 +564,7 @@ body {
     margin-bottom: 16px;
     color: var(--color-primary);
     font-size: 1.3rem;
+    text-shadow: 0 0 8px #fff, 0 0 16px rgba(255,255,255,0.5);
 }
 
 .game-instructions ol {
@@ -556,11 +573,11 @@ body {
 
 .game-instructions li {
     margin-bottom: 10px;
-    color: var(--color-text-muted);
+    color: #fff;
 }
 
 .game-instructions strong {
-    color: var(--color-text);
+    color: #fff;
 }
 
 /* ========================================
