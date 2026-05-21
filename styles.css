@@ -47,7 +47,7 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background: var(--color-bg);
-    background-image: url('https://cdnb.artstation.com/p/assets/images/images/048/922/651/large/seirra-swanson-grassybackground.jpg?1651250351');
+    background-image: url('https://cdn.jsdelivr.net/gh/Nathan-R1/Javascript-Dog-Memory-Game@main/resources/grass.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -87,7 +87,7 @@ body {
     text-shadow: 0 0 20px rgba(233, 69, 96, 0.4), 0 0 8px #fff, 0 0 16px rgba(255,255,255,0.5);
     margin-bottom: 8px;
     letter-spacing: 2px;
-    background: url('https://static.vecteezy.com/system/resources/thumbnails/002/193/057/small/wood-texture-background-free-vector.jpg') center/cover;
+    background: url('https://cdn.jsdelivr.net/gh/Nathan-R1/Javascript-Dog-Memory-Game@main/resources/wood.jpg') center/cover;
     display: inline-block;
     padding: 12px 24px;
     border-radius: var(--radius-lg);
@@ -236,7 +236,7 @@ body {
 }
 
 .game-message.info {
-    color: #fff;
+    color: var(--color-text-muted);
 }
 
 .game-message.success {
@@ -323,7 +323,7 @@ body {
 }
 
 .box-front {
-    background: url('https://opengameart.org/sites/default/files/crate_0.png') center/cover;
+    background: url('https://cdn.jsdelivr.net/gh/Nathan-R1/Javascript-Dog-Memory-Game@main/resources/box.png') center/cover;
     border: 2px solid var(--tier-color);
     box-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 30%, transparent);
 }
@@ -553,8 +553,8 @@ body {
    ======================================== */
 
 .game-instructions {
-    background: url('https://static.vecteezy.com/system/resources/thumbnails/002/193/057/small/wood-texture-background-free-vector.jpg') center/cover;
-    padding: 24px;
+    background: url('https://cdn.jsdelivr.net/gh/Nathan-R1/Javascript-Dog-Memory-Game@main/resources/wood.jpg') center/cover;
+    padding: 14px 24px 24px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     color: #fff;
